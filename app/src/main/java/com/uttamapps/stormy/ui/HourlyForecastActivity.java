@@ -20,8 +20,7 @@ public class HourlyForecastActivity extends AppCompatActivity {
 
     private Hour[] mHours;
 
-    @InjectView(R.id.reyclerView)
-    RecyclerView mRecyclerView;
+    @InjectView(R.id.reyclerView) RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,7 @@ public class HourlyForecastActivity extends AppCompatActivity {
         Parcelable[] parcelables = intent.getParcelableArrayExtra(MainActivity.HOURLY_FORECAST);
         mHours = Arrays.copyOf(parcelables, parcelables.length, Hour[].class);
 
-        HourAdapter adapter =  new HourAdapter(mHours);
+        HourAdapter adapter = new HourAdapter(this, mHours);
         mRecyclerView.setAdapter(adapter);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
