@@ -19,7 +19,8 @@ public class DayAdapter extends BaseAdapter {
     private Day[] mDays;
 
     public DayAdapter(Context context, Day[] days){
-
+        mContext = context;
+        mDays = days;
     }
 
     @Override
@@ -37,30 +38,36 @@ public class DayAdapter extends BaseAdapter {
         return 0; //Used to tag items for easy reference. Not going to be used
     }
 
+
+
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) //Called for intial display and each subsequent display
-    {
+    public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        if(convertView==null){
-            //runs only if brand new
+
+        if (convertView == null) {
+            // brand new
             convertView = LayoutInflater.from(mContext).inflate(R.layout.daily_list_item, null);
             holder = new ViewHolder();
             holder.iconImageView = (ImageView) convertView.findViewById(R.id.iconImageView);
             holder.temperatureLabel = (TextView) convertView.findViewById(R.id.temperatureLabel);
             holder.dayLabel = (TextView) convertView.findViewById(R.id.dayNameLabel);
 
-            convertView.setTag(holder); //sets tag for teh view used below
+            convertView.setTag(holder);
         }
-
-        else{
+        else {
             holder = (ViewHolder) convertView.getTag();
         }
 
         Day day = mDays[position];
-        holder.iconImageView.setImageResource(day.getIconId());
-        holder.temperatureLabel.setText(day.getTemperatureMax()+"");
-        holder.dayLabel.setText(day.getDayOfTheWeek());
 
+        holder.iconImageView.setImageResource(day.getIconId());
+        holder.temperatureLabel.setText(day.getTemperatureMax() + "");
+        if(position==0){
+            holder.dayLabel.setText("Today");
+        }
+        else {
+            holder.dayLabel.setText(day.getDayOfTheWeek());
+        }
         return convertView;
     }
 

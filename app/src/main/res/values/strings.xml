@@ -13,4 +13,9 @@
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_daily_forecast">DailyForecastActivity</string>
     <string name="no_daily_forecast_data">There is no data to display</string>
+    <string name="service_not_available">Service Not Available</string>
+    <string name="invalid_lat_long_used">Invalid Coordinates Used</string>
+    <string name="no_address_found">No Adress Found</string>
+    <string name="address_found">Adress Found</string>
+    <string name="title_activity_hourly_forecast">HourlyForecastActivity</string>
 </resources>

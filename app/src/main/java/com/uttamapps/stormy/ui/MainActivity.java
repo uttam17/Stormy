@@ -3,14 +3,15 @@ package com.uttamapps.stormy.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -37,22 +38,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "DAILY_FORECAST";
+    public static final String HOURLY_FORECAST = "HOURLY_FORECAST";
     private Forecast mForecast;
     private GoogleApiClient mGoogleApiClient;
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     public CurrentLocation mNewLocation = new CurrentLocation();
     public double latitude;
     public double longitude;
+
 
 
     @InjectView(R.id.timeLabel) TextView mTimeLabel; //Produces two for price of one! Creates the member variable and then creates the findViewById in the oncreate after you type ButterKnife.inject(this);
@@ -64,6 +69,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @InjectView(R.id.refreshImageView) ImageView mRefreshImageView;
     @InjectView(R.id.progressBar) ProgressBar mProgressBar;
     @InjectView(R.id.locationLabel) TextView mLocationLabel;
+    //@InjectView(R.id.locationLabel2) TextView mLocationLabel2;
 
 
 
@@ -85,14 +91,21 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             latitude = mLastLocation.getLatitude();
             Log.d(TAG, "latitude is set " + latitude);
             longitude = mLastLocation.getLongitude();
+
+
+
+
+
         }
 
 
-        /*LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        final double longitude = location.getLongitude();
-        final double latitude = location.getLatitude();*/
-
+        final double firstLongitude = location.getLongitude();
+        final double firstLatitude = location.getLatitude();
+        getForecast(firstLatitude, firstLongitude);
+        String city = getLocationName(firstLatitude, firstLongitude);
+        mLocationLabel.setText(city);
 
 
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
@@ -107,9 +120,39 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
         Log.d(TAG, "Main UI code is running!");
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = preferences.edit();
 
+
+    }
+
+    private String getLocationName(double latitude, double longitude) {
+        String cityName = "Not Found";
+        String stateName = "";
+        Geocoder gcd = new Geocoder(getBaseContext(), Locale.getDefault());
+        try {
+
+            List<Address> addresses = gcd.getFromLocation(latitude, longitude,10);
+
+            for (Address adrs : addresses) {
+                if (adrs != null) {
+
+                    String state = adrs.getAdminArea();
+                    String city = adrs.getLocality();
+                    if (city != null && !city.equals("")) {
+                        stateName = state;
+                        cityName = city;
+                        Log.d(TAG, "City and state are: " + city + " " + state);
+                    } else {
+                        Log.d(TAG, "No city or state!");
+                    }
+                    // // you should also try with addresses.get(0).toSring();
+
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cityName + ", "+stateName;
     }
 
     private void getForecast(double latitude, double longitude) {
@@ -120,7 +163,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         String rUrl = "http://requestb.in/1849pg01";
 
 
-        if(isNetworkAvailable()) {
+        if (isNetworkAvailable()) {
             toggleRefresh();
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
@@ -350,11 +393,19 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
-@OnClick (R.id.dailyButton) //no bs code. need only this with butterknife
-    public void startDailyActivity(View view){
-    Intent intent = new Intent(this, DailyForecastActivity.class);
-    intent.putExtra(DAILY_FORECAST, mForecast.getDailyForecast());
-    startActivity(intent);
-}
+    @OnClick (R.id.dailyButton)
+    public void startDailyActivity(View view) {
+        Intent intent = new Intent(this, DailyForecastActivity.class);
+        intent.putExtra(DAILY_FORECAST, mForecast.getDailyForecast());
+        startActivity(intent);
+    }
+
+    @OnClick (R.id.hourlyButton)
+    public void startHourlyActivity(View view){
+        Intent intent = new Intent(this, HourlyForecastActivity.class);
+        intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
+        startActivity(intent);
+    }
+
 }
 
